@@ -96,6 +96,11 @@ int impl_fixnum_p(VALUE obj)
   return FIXNUM_P(obj);
 }
 
+void impl_gc_adjust_memory_usage(ssize_t diff)
+{
+  rb_gc_adjust_memory_usage(diff);
+}
+
 int impl_static_sym_p(VALUE obj)
 {
   return STATIC_SYM_P(obj);

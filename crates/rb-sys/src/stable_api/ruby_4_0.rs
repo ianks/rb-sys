@@ -271,6 +271,11 @@ impl StableApiDefinition for Definition {
     }
 
     #[inline(always)]
+    fn gc_adjust_memory_usage(&self, diff: isize) {
+        unsafe { crate::rb_gc_adjust_memory_usage(diff as _) };
+    }
+
+    #[inline(always)]
     unsafe fn rstring_interned_p(&self, obj: VALUE) -> bool {
         debug_ruby_assert_type!(
             obj,
