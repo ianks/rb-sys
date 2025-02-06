@@ -151,6 +151,21 @@ impl StableApiDefinition for Definition {
     }
 
     #[inline(always)]
+    fn gc_adjust_memory_usage(&self, diff: isize) {
+        unsafe { crate::rb_gc_adjust_memory_usage(diff as _) };
+    }
+
+    #[inline(always)]
+    fn gc_writebarrier(&self, old: VALUE, young: VALUE) {
+        unsafe { crate::rb_gc_writebarrier(old, young) }
+    }
+
+    #[inline(always)]
+    fn gc_writebarrier_unprotect(&self, obj: VALUE) {
+        unsafe { crate::rb_gc_writebarrier_unprotect(obj) }
+    }
+
+    #[inline(always)]
     fn static_sym_p(&self, obj: VALUE) -> bool {
         const SPECIAL_MASK: VALUE =
             !(VALUE::MAX << crate::ruby_special_consts::RUBY_SPECIAL_SHIFT as VALUE);
@@ -268,11 +283,6 @@ impl StableApiDefinition for Definition {
         } else {
             self.fixnum_p(obj)
         }
-    }
-
-    #[inline(always)]
-    fn gc_adjust_memory_usage(&self, diff: isize) {
-        unsafe { crate::rb_gc_adjust_memory_usage(diff as _) };
     }
 
     #[inline(always)]
