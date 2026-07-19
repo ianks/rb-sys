@@ -161,6 +161,11 @@ module RbSys
       base_makefile = dummy_makefile(__dir__).join("\n")
       base_makefile.gsub!("all install static install-so install-rb", "all static install-rb")
       base_makefile.gsub!(/^srcdir = .*$/, "srcdir = #{cargo_dir}")
+      unless $nmake
+        base_makefile.gsub!(/^ECHO = \$\(ECHO1:0=@ echo\)$/,
+          "ECHO = $(ECHO1:0=@ /bin/echo)")
+      end
+
       base_makefile
     end
 
