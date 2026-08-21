@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "mkmf"
+require "rb_sys/mkmf"
 
 class TestRbSys < Minitest::Test
   def test_that_it_has_a_version_number
@@ -72,6 +74,51 @@ class TestRbSys < Minitest::Test
 
     assert_match(/rustup target add wasm32-unknown-unknown$/, makefile_output)
     assert_match(/rustup target add wasm32-wasi-unknown$/, makefile_output)
+  end
+
+  def test_bundled_libclang_uses_compiler_builtin_headers
+    original_libclang = Object.const_get(:Libclang) if Object.const_defined?(:Libclang, false)
+    Object.send(:remove_const, :Libclang) if original_libclang
+
+    libclang = Module.new do
+      def self.version
+        "14.0.6"
+      end
+
+      def self.libdir
+        "/vendor/lib"
+      end
+    end
+
+    Object.const_set(:Libclang, libclang)
+    stub(:require, true) do
+      stub(:compiler_builtin_include_dir, "/compiler/include") do
+        config = send(:try_load_bundled_libclang, nil)
+
+        assert_includes config, "LIBCLANG_PATH"
+        assert_includes config, "/vendor/lib"
+        assert_includes config, "BINDGEN_EXTRA_CLANG_ARGS"
+        assert_includes config, "-isystem /compiler/include"
+      end
+    end
+  ensure
+    Object.send(:remove_const, :Libclang) if Object.const_defined?(:Libclang, false)
+    Object.const_set(:Libclang, original_libclang) if original_libclang
+  end
+
+  def test_finds_builtin_headers_from_configured_compiler
+    builder = Struct.new(:env).new({"CC" => "ccache gcc"})
+    successful_status = Struct.new(:success?).new(true)
+    capture = lambda do |*command|
+      assert_equal ["ccache", "gcc", "-print-file-name=include"], command
+      ["/compiler/include\n", "", successful_status]
+    end
+
+    Open3.stub(:capture3, capture) do
+      Dir.stub(:exist?, true) do
+        assert_equal File.expand_path("/compiler/include"), send(:compiler_builtin_include_dir, builder)
+      end
+    end
   end
 
   def test_uses_extra_cargo_args
