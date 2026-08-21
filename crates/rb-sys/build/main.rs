@@ -32,6 +32,10 @@ fn main() {
     warn_deprecated_feature_flags();
 
     let mut rbconfig = RbConfig::current();
+    if let Err(error) = rbconfig.validate_cargo_target() {
+        eprintln!("rb-sys build error: {error}");
+        std::process::exit(1);
+    }
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let cfg_capture_path = out_dir.join(format!("cfg-capture-{}", rbconfig.ruby_version_slug()));
     let mut cfg_capture_file = File::create(cfg_capture_path).expect("create cfg capture file");
