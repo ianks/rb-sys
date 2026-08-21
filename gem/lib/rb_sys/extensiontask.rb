@@ -29,8 +29,8 @@ module RbSys
     def init(name = nil, gem_spec = nil)
       super(name, lint_gem_spec(name, gem_spec))
 
-      @orginal_ext_dir = @ext_dir
-      @ext_dir = cargo_metadata.manifest_directory
+      @original_ext_dir = @ext_dir
+      @ext_dir = cargo_manifest_directory
       @source_pattern = nil
       @compiled_pattern = "*.{obj,so,bundle,dSYM}"
       @cross_compile = ENV.key?("RUBY_TARGET")
@@ -86,6 +86,8 @@ module RbSys
     end
 
     def target_directory
+      return fallback_target_directory if @cargo_metadata_unavailable
+
       cargo_metadata.target_directory
     end
 
@@ -128,6 +130,33 @@ module RbSys
     end
 
     private
+
+    def cargo_manifest_directory
+      cargo_metadata.manifest_directory
+    rescue CargoMetadataError
+      raise unless force_install_rust_toolchain?
+
+      # Let the generated Makefile install Cargo before the extension is built.
+      @cargo_metadata_unavailable = true
+      File.expand_path(configured_extension_directory)
+    end
+
+    def configured_extension_directory
+      extension = @gem_spec&.extensions&.find do |path|
+        %w[Cargo.toml extconf.rb].include?(File.basename(path))
+      end
+
+      extension ? File.dirname(extension) : @original_ext_dir
+    end
+
+    def fallback_target_directory
+      File.expand_path(ENV["RB_SYS_CARGO_TARGET_DIR"] || ENV["CARGO_TARGET_DIR"] || "target")
+    end
+
+    def force_install_rust_toolchain?
+      value = ENV["RB_SYS_FORCE_INSTALL_RUST_TOOLCHAIN"]
+      value && value != "false"
+    end
 
     def lint_gem_spec(name, gs)
       gem_spec = case gs

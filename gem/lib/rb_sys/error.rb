@@ -32,7 +32,7 @@ module RbSys
           - Make sure `cargo` is installed and in your PATH
       MSG
 
-      if !stderr.empty?
+      if stderr && !stderr.empty?
         indented_stderr = stderr.lines.map { |line| "  #{line}" }.join
         msg << "Stderr from `cargo metadata` was:\n#{indented_stderr}"
       end
