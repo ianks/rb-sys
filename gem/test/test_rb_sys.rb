@@ -21,6 +21,24 @@ class TestRbSys < Minitest::Test
     assert_match(/\$\(CARGO\) rustc/, makefile.read)
   end
 
+  def test_target_dir_rewrite_handles_double_hyphens_in_path
+    makefile = create_makefile(prefix: "rb_sys_test--worktree")
+    cargo_command = cargo_command_line(makefile)
+
+    assert_includes(cargo_command, "--target-dir $(RB_SYS_CARGO_TARGET_DIR)")
+    assert_includes(cargo_command, "--lib $(RB_SYS_CARGO_PROFILE_FLAG)")
+    refute_includes(cargo_command, "--worktree")
+  end
+
+  def test_target_dir_rewrite_handles_spaces_in_path
+    makefile = create_makefile(prefix: "rb_sys space_marker")
+    cargo_command = cargo_command_line(makefile)
+
+    assert_includes(cargo_command, "--target-dir $(RB_SYS_CARGO_TARGET_DIR)")
+    assert_includes(cargo_command, "--lib $(RB_SYS_CARGO_PROFILE_FLAG)")
+    refute_includes(cargo_command, "space_marker")
+  end
+
   def test_invokes_custom_env
     skip("Skipping for mswin") if win_target?
 
@@ -171,15 +189,19 @@ class TestRbSys < Minitest::Test
 
   private
 
-  def create_makefile(&blk)
+  def create_makefile(prefix: "rb_sys_test", &blk)
     require "mkmf"
     require "rb_sys/mkmf"
-    cargo_dir = Dir.mktmpdir("rb_sys_test")
+    cargo_dir = Dir.mktmpdir(prefix)
 
     Dir.chdir(cargo_dir) do
       create_rust_makefile("foo_ext", &blk)
       Pathname.new(File.join(cargo_dir, "Makefile"))
     end
+  end
+
+  def cargo_command_line(makefile)
+    makefile.read.lines.find { |line| line.include?("$(CARGO) rustc") }
   end
 
   def create_makefile_with_cargo_config(config_content, &blk)
