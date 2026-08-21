@@ -297,7 +297,7 @@ module RbSys
         return
       end
 
-      %($(Q) #{tool} -id "" $(DLLIB))
+      %($(Q) #{tool} -id "$(notdir $(DLLIB))" $(DLLIB))
     end
 
     def if_eq_stmt(a, b)
