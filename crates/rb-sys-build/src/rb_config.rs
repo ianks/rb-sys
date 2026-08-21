@@ -80,6 +80,7 @@ impl RbConfig {
                     .arg("-rrbconfig")
                     .arg("-e")
                     .arg("print RbConfig::CONFIG.map {|kv| kv.join(\"\x1F\")}.join(\"\x1E\")")
+                    .env_remove("RUBYOPT")
                     .output()
                     .unwrap_or_else(|e| panic!("ruby not found: {}", e));
                 if !config.status.success() {

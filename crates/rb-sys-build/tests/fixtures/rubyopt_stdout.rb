@@ -1,0 +1,1 @@
+puts "RUBYOPT polluted stdout"
