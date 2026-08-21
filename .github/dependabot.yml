@@ -23,8 +23,9 @@ updates:
       time: "09:00"
       timezone: "America/New_York"
     groups:
-      cargo-transitive:
-        dependency-type: "indirect"
+      cargo-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
