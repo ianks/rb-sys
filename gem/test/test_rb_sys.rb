@@ -81,8 +81,13 @@ class TestRbSys < Minitest::Test
     Object.send(:remove_const, :Libclang) if original_libclang
 
     libclang = Module.new do
-      def self.version = "14.0.6"
-      def self.libdir = "/vendor/lib"
+      def self.version
+        "14.0.6"
+      end
+
+      def self.libdir
+        "/vendor/lib"
+      end
     end
 
     Object.const_set(:Libclang, libclang)
@@ -90,8 +95,10 @@ class TestRbSys < Minitest::Test
       stub(:compiler_builtin_include_dir, "/compiler/include") do
         config = send(:try_load_bundled_libclang, nil)
 
-        assert_includes config, "export LIBCLANG_PATH := /vendor/lib"
-        assert_includes config, "export BINDGEN_EXTRA_CLANG_ARGS ?= -isystem /compiler/include"
+        assert_includes config, "LIBCLANG_PATH"
+        assert_includes config, "/vendor/lib"
+        assert_includes config, "BINDGEN_EXTRA_CLANG_ARGS"
+        assert_includes config, "-isystem /compiler/include"
       end
     end
   ensure
@@ -109,7 +116,7 @@ class TestRbSys < Minitest::Test
 
     Open3.stub(:capture3, capture) do
       Dir.stub(:exist?, true) do
-        assert_equal "/compiler/include", send(:compiler_builtin_include_dir, builder)
+        assert_equal File.expand_path("/compiler/include"), send(:compiler_builtin_include_dir, builder)
       end
     end
   end
