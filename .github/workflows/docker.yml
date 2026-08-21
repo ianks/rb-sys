@@ -60,7 +60,7 @@ jobs:
           repository: "oxidize-rb/oxi-test"
           path: "tmp/oxi-test"
 
-      - uses: ruby/setup-ruby@d5126b9b3579e429dd52e51e68624dda2e05be25 # v1
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1
         with:
           ruby-version: "3.1"
 
@@ -182,7 +182,7 @@ jobs:
             --highestUserWastedPercent "$highest_user_wasted_percent"
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: "v0.69.3"
           image-ref: "${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.ruby_platform }}:sha-${{ github.sha }}"
@@ -194,7 +194,7 @@ jobs:
           exit-code: "0" # Changed from "1" to "0" to prevent failing on EOL OS warnings
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@014f16e7ab1402f30e7c3329d33797e7948572db # v3
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v3
         with:
           sarif_file: "trivy-results-${{ env.ruby_platform }}.sarif"
           category: "docker-${{ env.ruby_platform }}"
@@ -221,7 +221,7 @@ jobs:
           readme-filepath: ./readme.md
 
       - name: Slack Noti on Failure
-        uses: 8398a7/action-slack@1750b5085f3ec60384090fb7c52965ef822e869e # v3
+        uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3
         with:
           status: ${{ job.status }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest
