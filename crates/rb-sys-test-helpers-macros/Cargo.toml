@@ -15,5 +15,5 @@ bench = false
 doctest = true
 
 [dependencies]
-syn = { version = "2.0", features = ["parsing", "full"] }
+syn = { version = "3.0", features = ["parsing", "full"] }
 quote = "1.0"
