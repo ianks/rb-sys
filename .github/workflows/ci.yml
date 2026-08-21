@@ -34,7 +34,7 @@ jobs:
     name: 🚓 Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
@@ -116,9 +116,9 @@ jobs:
     # Allow truffleruby to fail until 2025-01-01 (known compatibility issues)
     continue-on-error: ${{ matrix.allow_failure || false }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: oxidize-rb/actions/upload-core-dumps@ad2f40797c2160b7ef31f1aabcfcb6a02539f6bc # v1
+      - uses: oxidize-rb/actions/upload-core-dumps@85175a9d5f63d4491253e957d3fc3f4ed7f17534 # v1
 
       - name: Setup debug info
         shell: bash
@@ -209,7 +209,7 @@ jobs:
         if: env.ACTIONS_STEP_DEBUG == 'true'
         run: bundle exec rake bindings:generate
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rb-sys-ci-debug-artifacts-${{ matrix.sys.os }}-${{ matrix.ruby_version }}
@@ -230,9 +230,9 @@ jobs:
             rust_toolchain: stable
     runs-on: ${{ matrix.sys.os }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: oxidize-rb/actions/upload-core-dumps@ad2f40797c2160b7ef31f1aabcfcb6a02539f6bc # v1
+      - uses: oxidize-rb/actions/upload-core-dumps@85175a9d5f63d4491253e957d3fc3f4ed7f17534 # v1
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
@@ -246,7 +246,7 @@ jobs:
           echo "GEM_HOME=~/.gem/ruby/${{ matrix.ruby_version }}" >> $GITHUB_ENV
 
       - name: ⚡ Cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v4
         with:
           path: |
             /opt/rubies/${{ matrix.ruby_version }}
