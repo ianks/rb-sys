@@ -17,7 +17,7 @@ jobs:
   doctest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Ruby and Rust
         uses: oxidize-rb/actions/setup-ruby-and-rust@v1

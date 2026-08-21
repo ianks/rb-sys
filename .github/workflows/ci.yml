@@ -34,7 +34,7 @@ jobs:
     name: 🚓 Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       - uses: oxidize-rb/actions/setup-ruby-and-rust@v1
         with:
@@ -116,7 +116,7 @@ jobs:
     # Allow truffleruby to fail until 2025-01-01 (known compatibility issues)
     continue-on-error: ${{ matrix.allow_failure || false }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       - uses: oxidize-rb/actions/upload-core-dumps@ad2f40797c2160b7ef31f1aabcfcb6a02539f6bc # v1
 
@@ -230,7 +230,7 @@ jobs:
             rust_toolchain: stable
     runs-on: ${{ matrix.sys.os }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       - uses: oxidize-rb/actions/upload-core-dumps@ad2f40797c2160b7ef31f1aabcfcb6a02539f6bc # v1
 

@@ -38,7 +38,7 @@ jobs:
       matrix:
         toolchain: ${{ fromJSON(needs.fetch_ci_data.outputs.toolchains-data) }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       - name: Set rb-sys version variable
         id: vars
@@ -55,7 +55,7 @@ jobs:
           echo "aliases=$aliases" >> $GITHUB_ENV
 
       # Test the container
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           repository: "oxidize-rb/oxi-test"
           path: "tmp/oxi-test"
