@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./CodeComparison.module.css";
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+import Tabs, { TabItem } from "@site/src/theme/Tabs";
 import CodeBlock from "@theme/CodeBlock";
 
 type CodeComparisonProps = {
