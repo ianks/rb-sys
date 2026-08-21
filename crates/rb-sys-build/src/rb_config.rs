@@ -233,6 +233,22 @@ impl RbConfig {
         }
     }
 
+    /// Checks that Ruby's C headers use the same operating-system ABI as Cargo's target.
+    ///
+    /// Bindgen can locate headers from a cross-compilation sysroot, but headers from a Ruby
+    /// built for a different target are not compatible. In particular, RubyInstaller uses
+    /// MinGW headers which cannot be used with Rust's MSVC target.
+    pub fn validate_cargo_target(&self) -> Result<(), String> {
+        let Ok(cargo_target) = env::var("TARGET") else {
+            return Ok(());
+        };
+        let Some(ruby_target_os) = self.get("target_os") else {
+            return Ok(());
+        };
+
+        validate_target_compatibility(&ruby_target_os, &cargo_target)
+    }
+
     /// Returns the value of the given key from the either the matching
     /// `RBCONFIG_{key}` environment variable or `RbConfig::CONFIG[{key}]` hash.
     pub fn get(&self, key: &str) -> Option<String> {
@@ -477,6 +493,97 @@ impl RbConfig {
         println!("cargo:rerun-if-env-changed={}", key);
         env::var(key).map(|v| v.trim_matches('\n').to_owned()).ok()
     }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum TargetFamily {
+    WindowsGnu,
+    WindowsMsvc,
+    Os(&'static str),
+}
+
+fn ruby_target_family(target_os: &str) -> Option<TargetFamily> {
+    let target_os = target_os.to_ascii_lowercase();
+
+    if target_os.contains("mingw") {
+        return Some(TargetFamily::WindowsGnu);
+    }
+    if target_os.contains("mswin") {
+        return Some(TargetFamily::WindowsMsvc);
+    }
+
+    target_os_family(&target_os)
+}
+
+fn cargo_target_family(target: &str) -> Option<TargetFamily> {
+    let target = target.to_ascii_lowercase();
+
+    if target.contains("windows-gnu") || target.contains("windows-gnullvm") {
+        return Some(TargetFamily::WindowsGnu);
+    }
+    if target.contains("windows-msvc") {
+        return Some(TargetFamily::WindowsMsvc);
+    }
+
+    target_os_family(&target)
+}
+
+fn target_os_family(target: &str) -> Option<TargetFamily> {
+    const OPERATING_SYSTEMS: &[&str] = &[
+        "android",
+        "darwin",
+        "dragonfly",
+        "emscripten",
+        "freebsd",
+        "haiku",
+        "illumos",
+        "ios",
+        "linux",
+        "netbsd",
+        "openbsd",
+        "solaris",
+        "wasi",
+    ];
+
+    OPERATING_SYSTEMS
+        .iter()
+        .find(|operating_system| target.contains(*operating_system))
+        .map(|operating_system| TargetFamily::Os(operating_system))
+}
+
+fn validate_target_compatibility(ruby_target_os: &str, cargo_target: &str) -> Result<(), String> {
+    let Some(ruby_family) = ruby_target_family(ruby_target_os) else {
+        return Ok(());
+    };
+    let Some(cargo_family) = cargo_target_family(cargo_target) else {
+        return Ok(());
+    };
+
+    if ruby_family == cargo_family {
+        return Ok(());
+    }
+
+    let mut message = format!(
+        "Ruby was built for target_os={ruby_target_os:?}, but Cargo is compiling for \
+         {cargo_target:?}. rb-sys cannot generate bindings from Ruby headers for a different \
+         operating-system ABI."
+    );
+
+    if ruby_family == TargetFamily::WindowsGnu && cargo_family == TargetFamily::WindowsMsvc {
+        message.push_str(
+            " RubyInstaller uses MinGW; select the matching Rust GNU target (for 64-bit \
+             RubyInstaller, set RUST_TARGET=x86_64-pc-windows-gnu or pass \
+             --target x86_64-pc-windows-gnu to Cargo).",
+        );
+    } else {
+        message.push_str(
+            " When cross-compiling with rb-sys-dock, use `rb-sys-dock --build` or the \
+             `rake native:$RUBY_TARGET` task so rake-compiler supplies the target Ruby's \
+             RbConfig instead of the container's host Ruby config.",
+        );
+    }
+
+    Err(message)
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -836,6 +943,52 @@ mod tests {
 
             assert!(!rb_config.value_map.is_empty());
         });
+    }
+
+    #[test]
+    fn test_accepts_matching_ruby_and_cargo_targets() {
+        assert_eq!(
+            validate_target_compatibility("mingw32", "x86_64-pc-windows-gnu"),
+            Ok(())
+        );
+        assert_eq!(
+            validate_target_compatibility("mingw-ucrt", "aarch64-pc-windows-gnullvm"),
+            Ok(())
+        );
+        assert_eq!(
+            validate_target_compatibility("linux-gnu", "aarch64-unknown-linux-gnu"),
+            Ok(())
+        );
+        assert_eq!(
+            validate_target_compatibility("darwin24", "aarch64-apple-darwin"),
+            Ok(())
+        );
+    }
+
+    #[test]
+    fn test_rejects_mingw_ruby_with_msvc_cargo_target() {
+        let error = validate_target_compatibility("mingw32", "x86_64-pc-windows-msvc").unwrap_err();
+
+        assert!(error.contains("RubyInstaller uses MinGW"));
+        assert!(error.contains("RUST_TARGET=x86_64-pc-windows-gnu"));
+    }
+
+    #[test]
+    fn test_rejects_host_ruby_config_for_rb_sys_dock_target() {
+        let error =
+            validate_target_compatibility("linux-gnu", "x86_64-pc-windows-gnu").unwrap_err();
+
+        assert!(error.contains("rb-sys-dock --build"));
+        assert!(error.contains("rake native:$RUBY_TARGET"));
+        assert!(error.contains("host Ruby config"));
+    }
+
+    #[test]
+    fn test_allows_unknown_targets_for_backwards_compatibility() {
+        assert_eq!(
+            validate_target_compatibility("new-ruby-os", "x86_64-new-rust-os"),
+            Ok(())
+        );
     }
 
     #[test]
