@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rubygems/ext"
+require "open3"
 require "shellwords"
 require_relative "cargo_builder"
 require_relative "mkmf/config"
@@ -358,12 +359,34 @@ module RbSys
       end
     end
 
-    def try_load_bundled_libclang(_builder)
+    def try_load_bundled_libclang(builder)
       require "libclang"
       assert_libclang_version_valid!
-      export_env("LIBCLANG_PATH", Libclang.libdir)
+
+      config = [export_env("LIBCLANG_PATH", Libclang.libdir)]
+      if (include_dir = compiler_builtin_include_dir(builder))
+        clang_args = Shellwords.join(["-isystem", include_dir])
+        config << conditional_assign("BINDGEN_EXTRA_CLANG_ARGS", clang_args, export: true)
+      end
+      config.join("\n")
     rescue LoadError
       # If we can't load the bundled libclang, just continue
+    end
+
+    def compiler_builtin_include_dir(builder)
+      cc = env_or_makefile_config("CC", builder)
+      return unless cc
+
+      stdout, _stderr, status = Open3.capture3(*Shellwords.split(cc), "-print-file-name=include")
+      return unless status.success?
+
+      path = stdout.strip
+      return if path.empty? || path == "include"
+
+      include_dir = File.expand_path(path)
+      include_dir if Dir.exist?(include_dir)
+    rescue Errno::ENOENT
+      nil
     end
 
     def assert_libclang_version_valid!
