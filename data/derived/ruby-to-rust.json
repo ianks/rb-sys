@@ -1,5 +1,6 @@
 {
   "arm-linux": "arm-unknown-linux-gnueabihf",
+  "arm-linux-musl": "arm-unknown-linux-musleabihf",
   "aarch64-linux": "aarch64-unknown-linux-gnu",
   "aarch64-linux-musl": "aarch64-unknown-linux-musl",
   "arm64-darwin": "aarch64-apple-darwin",
