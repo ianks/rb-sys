@@ -43,6 +43,11 @@ namespace :release do
     Dir.chdir("examples/rust_reverse") { sh("cargo", "check") }
     sh "bundle install"
     sh "rake test:examples"
+
+    # Cargo >= 1.83 upgrades this lockfile to v4, which the MSRV cannot read.
+    example_lockfile = "examples/rust_reverse/ext/rust_reverse/Cargo.lock"
+    lockfile_contents = File.read(example_lockfile).sub(/^version = 4$/, "version = 3")
+    File.write(example_lockfile, lockfile_contents)
   end
 
   desc "Publish the crates and gems"
