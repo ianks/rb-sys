@@ -102,7 +102,7 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=sha,format=long
-          labels:
+          labels: |
             org.opencontainers.image.description=Image for building native Rust extensions for Ruby on ${{ env.ruby_platform }}
             org.opencontainers.image.vendor=oxidize-rb
             org.oxidize-rb.ruby.platform=${{ env.ruby_platform }}
