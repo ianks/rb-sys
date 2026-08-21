@@ -39,12 +39,9 @@ updates:
       timezone: "America/New_York"
     open-pull-requests-limit: 10
     groups:
-      github-actions-minor-patch:
+      github-actions:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
 
   - package-ecosystem: "docker"
     directory: "/docker"
