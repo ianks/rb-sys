@@ -39,12 +39,9 @@ updates:
       timezone: "America/New_York"
     open-pull-requests-limit: 10
     groups:
-      github-actions-minor-patch:
+      github-actions:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
 
   - package-ecosystem: "docker"
     directory: "/docker"
@@ -61,11 +58,6 @@ updates:
       day: "friday"
       time: "09:00"
       timezone: "America/New_York"
-    ignore:
-      # Docusaurus 3.9.2 passes webpackbar options that webpack 5.109 rejects.
-      - dependency-name: "webpack"
-        versions:
-          - "5.109.x"
     groups:
       docsite-minor-patch:
         patterns:

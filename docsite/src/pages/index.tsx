@@ -6,8 +6,7 @@ import Layout from "@theme/Layout";
 import HomepageFeatures from "@site/src/components/HomepageFeatures";
 import Heading from "@theme/Heading";
 import CodeBlock from "@theme/CodeBlock";
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+import Tabs, { TabItem } from "@site/src/theme/Tabs";
 
 import styles from "./index.module.css";
 

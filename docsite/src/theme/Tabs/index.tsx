@@ -9,6 +9,7 @@ interface TabItemProps {
   className?: string;
   value: string;
   label: string;
+  default?: boolean;
 }
 
 // Export TabItem as a named export
