@@ -61,7 +61,7 @@ module RbSys
     end
 
     def extconf
-      File.join(cargo_metadata.manifest_directory, "extconf.rb")
+      File.join(ext_dir, "extconf.rb")
     end
 
     def binary(_platf)
@@ -104,7 +104,7 @@ module RbSys
     def define_env_tasks
       task "rb_sys:env:default" do
         ENV["RB_SYS_CARGO_TARGET_DIR"] ||= target_directory
-        ENV["RB_SYS_CARGO_MANIFEST_DIR"] ||= cargo_metadata.manifest_directory
+        ENV["RB_SYS_CARGO_MANIFEST_DIR"] ||= File.expand_path(ext_dir)
         ENV["RB_SYS_CARGO_PROFILE"] ||= "release"
       end
 
